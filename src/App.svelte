@@ -21,6 +21,7 @@
 	const handleCloseGame = (info) => {
 		if (info) {
 			// submit this game
+			const { score, name } = info;
 		}
 		currentlyPlaying = false;
 	};
@@ -30,9 +31,11 @@
 	<h1>Play svelty-balls!</h1>
 
 	{#if currentlyPlaying}
+		<!-- GAME -->
 		<Game on:close={(e) => handleCloseGame(e.detail)} />
 		<button on:click={stopGame}>Foreit current game.</button>
 	{:else}
+		<!-- GAME MENU -->
 		<section>
 			Settings: Enemy Speed Mutator:
 			<input type="number" bind:value={$enemySpeedMutator} />
