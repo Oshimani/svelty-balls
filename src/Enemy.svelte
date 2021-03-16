@@ -67,15 +67,44 @@
         style="height:{radius * 2 + _strokeWidth};width:{radius * 2 +
             _strokeWidth}"
     >
+        <!-- ENEMY BODY -->
         <circle
+            class="enemy-body"
             on:mousedown={handleOnClick}
             r="{radius}px"
             cx="50%"
             cy="50%"
-            fill="red"
             stroke="black"
             stroke-width={_strokeWidth}
         />
+
+        <!-- CROSSHAIR -->
+        <g class="crosshair">
+            <circle
+                r="{radius * 0.5}px"
+                cx="50%"
+                cy="50%"
+                stroke="black"
+                fill="none"
+                stroke-width={_strokeWidth * 0.6}
+            />
+            <line
+                x1="10%"
+                y1="10%"
+                x2="90%"
+                y2="90%"
+                stroke="black"
+                stroke-width={_strokeWidth * 0.6}
+            />
+            <line
+                x1="90%"
+                y1="10%"
+                x2="10%"
+                y2="90%"
+                stroke="black"
+                stroke-width={_strokeWidth * 0.6}
+            />
+        </g>
     </svg>
 </div>
 
@@ -83,6 +112,18 @@
     .enemy {
         position: absolute;
         transform: translate(-50%, -50%);
+    }
+
+    .crosshair {
+        display: none;
+    }
+    .enemy:hover .crosshair {
+        display: initial;
+        pointer-events: none;
+    }
+
+    .enemy-body {
+        fill: rgb(255, 0, 0);
     }
     .canvas {
     }
