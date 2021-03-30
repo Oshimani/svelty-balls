@@ -3,14 +3,14 @@
     import { enemySpeedMutator, gameTick, playgroundRadius } from "./gameStore";
 
     export let id;
-    let radius: number = 20;
-    let _strokeWidth: number = 2;
 
     let x: number = 0;
     let y: number = 0;
 
     let velocityX: number;
     let velocityY: number;
+
+    let enemyType = "default";
 
     let unsubscribe;
 
@@ -29,7 +29,26 @@
         return { x, y };
     };
 
+    const initEnemyType = () => {
+        const rng = Math.random();
+        if (rng > 0.9) {
+            enemyType = "friendly";
+        } else {
+            enemyType = "default";
+        }
+    };
+
     $: distanceFromCenter = Math.sqrt(x * x + y * y);
+
+    $: enemyColor = () => {
+        switch (enemyType) {
+            case "friendly":
+                return "#5bff08";
+
+            default:
+                return "red";
+        }
+    };
 
     const move = (speedMutator: number) => {
         x = x + velocityX * speedMutator;
@@ -37,17 +56,18 @@
     };
 
     const handleOnClick = () => {
-        dispatch("kill", id);
+        dispatch("kill", { id, enemyType });
     };
 
     const checkDeathCondition = () => {
         if (distanceFromCenter > $playgroundRadius) {
-            dispatch("die", id);
+            dispatch("die", { id, enemyType });
         }
     };
 
     onMount(() => {
-        const { x, y } = initMomentum();
+        initMomentum();
+        initEnemyType();
 
         // GAMELOOP HERE
         unsubscribe = gameTick.subscribe((value) => {
@@ -63,47 +83,42 @@
 
 <div class="enemy" style="left: calc(50% + {x}px); top: calc(50% + {y}px);">
     <svg
-        class="canvas"
-        style="height:{radius * 2 + _strokeWidth};width:{radius * 2 +
-            _strokeWidth}"
+        class="enemy-canvas"
+        width="100"
+        height="100"
+        viewBox="0 0 100 100"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
     >
-        <!-- ENEMY BODY -->
-        <circle
-            class="enemy-body"
-            on:mousedown={handleOnClick}
-            r="{radius}px"
-            cx="50%"
-            cy="50%"
-            stroke="black"
-            stroke-width={_strokeWidth}
-        />
-
-        <!-- CROSSHAIR -->
-        <g class="crosshair">
+        <g id="enemy-hitbox" on:mousedown={() => handleOnClick()}>
             <circle
-                r="{radius * 0.5}px"
-                cx="50%"
-                cy="50%"
+                cx="50"
+                cy="50"
+                r="50"
+                fill={enemyColor()}
                 stroke="black"
-                fill="none"
-                stroke-width={_strokeWidth * 0.6}
+            />
+            <circle cx="28.8889" cy="33.3333" r="7.77778" fill="white" />
+            <line
+                x1="20.1709"
+                y1="21.7523"
+                x2="44.6153"
+                y2="30.6412"
+                stroke="black"
+            />
+            <circle
+                r="7.77778"
+                transform="matrix(-1 0 0 1 71.1111 33.3333)"
+                fill="white"
             />
             <line
-                x1="10%"
-                y1="10%"
-                x2="90%"
-                y2="90%"
+                y1="-0.5"
+                x2="26.0104"
+                y2="-0.5"
+                transform="matrix(-0.939793 0.341743 0.341743 0.939793 80 22.2222)"
                 stroke="black"
-                stroke-width={_strokeWidth * 0.6}
             />
-            <line
-                x1="90%"
-                y1="10%"
-                x2="10%"
-                y2="90%"
-                stroke="black"
-                stroke-width={_strokeWidth * 0.6}
-            />
+            <path d="M50 90L91.1111 64.4444H8.88889L50 90Z" fill="white" />
         </g>
     </svg>
 </div>
@@ -112,19 +127,13 @@
     .enemy {
         position: absolute;
         transform: translate(-50%, -50%);
-    }
-
-    .crosshair {
-        display: none;
-    }
-    .enemy:hover .crosshair {
-        display: initial;
         pointer-events: none;
     }
-
-    .enemy-body {
-        fill: rgb(255, 0, 0);
+    .enemy-canvas {
+        transform: scale(0.5);
+        pointer-events: none;
     }
-    .canvas {
+    #enemy-hitbox {
+        pointer-events: initial;
     }
 </style>

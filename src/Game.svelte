@@ -18,6 +18,10 @@
     let enemies: any[] = [];
     let remainingTime: number = $gameTimeLimit;
 
+    let hits: number = 0;
+    let clicks: number = 0;
+    $: accuracy = ((hits / clicks) * 100).toFixed(1);
+
     $: isGameOver = remainingTime <= 0;
 
     onMount(() => {
@@ -58,15 +62,34 @@
         }
     };
 
-    const handleEnemyKill = (id: number) => {
+    const handleEnemyKill = ({ id, enemyType }) => {
         enemies = enemies.filter((e) => e.id !== id);
-        score++;
+        if (enemyType === "default") {
+            score++;
+        } else if (enemyType === "friendly") {
+            score--;
+        }
     };
 
-    const handleEnemyDie = (id: number) => {
+    const handleEnemyDie = ({ id, enemyType }) => {
         enemies = enemies.filter((e) => e.id !== id);
-        score--;
-        remainingTime--;
+
+        if (enemyType === "default") {
+            score--;
+            remainingTime--;
+        } else if (enemyType === "friendly") {
+            remainingTime++;
+        }
+    };
+
+    const handleClickOnCanvas = (e) => {
+        if (e.path.findIndex((element) => element.id === "enemy-hitbox") > -1) {
+            // hit
+            hits++;
+        } else {
+            // miss
+        }
+        clicks++;
     };
 </script>
 
@@ -92,6 +115,7 @@
     <section class="info">
         Score: {score}
         Remaining time: {remainingTime}
+        Accuracy: {isNaN(Number(accuracy)) ? "-" : accuracy + "%"}
     </section>
 
     <!-- PLAYGROUND -->
@@ -108,7 +132,7 @@
         </svg>
 
         <!-- ENEMIES -->
-        <div class="canvas">
+        <div on:mousedown={(e) => handleClickOnCanvas(e)} class="canvas">
             <div id="enemy-canvas">
                 {#each enemies as enemy (enemy.id)}
                     <Enemy
@@ -171,6 +195,9 @@
 
     .over-enemies {
         pointer-events: none;
+    }
+    #center-dot {
+        pointer-events: initial;
     }
 
     .game-over-backdrop {
